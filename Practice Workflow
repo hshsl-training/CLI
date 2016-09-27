@@ -1,0 +1,106 @@
+#Start out by checking your location
+
+      `$ pwd`
+
+#From the project directory you want to change directory to the
+#directory with the files (this depends on your directory structure!)
+
+      `$ cd ~/CLI/gencommand_proj1_data`
+
+#List the files to see the content of the directory
+
+      `$ ls -l`
+
+#Our first question asks, how many chromosomes are there in the genome
+#Looking at the apple.genome file we see that there is genomic information
+#in multi-fasta format
+
+      `$ more apple.genome`
+
+#in this file type each new chromosome is designated by a ">" symbol followed by an identifier then everything is
+#followed by the sequence. The command `grep` allows us to search a file line by line to looking for a specific pattern.
+#We can use `grep` to search the file line by line for the pattern ">"
+
+      `$ grep ">" apple.genome`
+
+#Great, we have our results. What if this file had 100 chromosomes, 1000 chromosomes, it is helpful to get a count
+#of the lines that `grep` found. there are 2 options for this
+
+      `$ grep ">" apple.genome | wc -l` or
+
+      `$ grep -c ">" apple.genome`
+
+#In the file `apple.genes` each line represents a different transcript variant, the columns for apple.gene are:
+#"geneID","transcriptID","chrom", "strand", "transcriptStart", "transcriptEnd","transcriptStructure"
+#to answer the question: How many Genes? we will look at column #1 (aka "field1") since counting the distinct number
+#of 'geneID' will give us the number of distinct genes. To analyze column #1 `cut` it, this trims the file to a one column
+#file, then we will `sort` using -u flag to only sort distinct (unique) names, finally we will pipe that data to `wc` with -l flag
+#to count the number of lines. This will give us the number of unique genes in apple.genes.
+
+      `cut -f1 apple.genes | sort -u | wc -l`
+
+#To find the number of transcripts we have to look at the number of distinct names in column#2 (aka field2) following
+#the previous approach:
+
+      `cut -f2 apple.genes | sort -u | wc -l`
+
+#To determine which genes have single vs multiple variants we will look at column#1 because the number
+#of splice variants for a gene is given by the number of lines that have that geneID in column#1. To determine
+#the number of lines for each gene and then extract only the genes that have exactly one line. This examples uses
+#`uniq` command which reports the lines that are repeated in a file, - the `-c` flag gives a count of the number of times
+#the line occurred in the input.
+
+      `cut -f1 apple.genes | sort | uniq -c | grep -c "1"`
+
+#To find out which genes have multiple variants you change up the approach from above but count the number of genes
+#with more than one line. `grep -v` allows us to find all lines not matching the pattern
+
+      `cut -f1 apple.genes | sort | uniq -c | grep -v "1" | wc -l`
+
+#Now that we know plenty about the genes and their variants, we want to find out which strand of the chromosome has
+#more genes on it. Column#4 has the strand information but merely looking at column#4 alone will not give us the answer
+#we are looking for since some genes have multiple transcript variants all of which are located on the same strand. After
+#cutting and sorting we will extract the strand column and count the number of entries of each type
+
+      `$ cut -f1,4 apple.genes | sort -u | cut -f2 | sort | uniq -c`
+
+#Similar to the prior question we will subset geneID's and to determine how many genes are on each chromosome
+we will work with column#3 (chrom)
+
+      `$ cut -f1,3 apple.genes | sort -u | cut -f2 | sort | uniq -c`
+#Our last bit of work with the apple.genes file will be to determine how many transcripts are on each chromosome. To
+#answer this we will approach the question in a similar way to the prior questions but since we are looking to find
+#transcripts per chromosome we will need to examine column#2 and column#3. Since each transcriptID is unique already
+#unlike the geneID which could have duplicates we can simplify the workflow. See it both ways to make sure for yourself
+
+      `$ cut -f2,3 apple.genes | cut -f2 | sort | uniq -c` or
+      `$ cut -f2,3 apple.genes | sort -u | cut -f2 | sort | uniq -c`
+
+#In our final question we are asked to find out which genes are common between experimental conditions, and which are
+#specific to either one or another experimental condition. To execute on this task we will learn about a new command not
+#covered yet. `comm` The `comm` utility reads file1 and file2, which should be sorted lexically,and produces three
+#text columns as output: lines only in file1; lines only in file2; and lines in both files. First we will find which
+#genes are in common between condition A and condition B. GeneID's are found in column#1 of the apple.condition* files.
+#We need to isolate the unique geneID's of each condition to compare between them. The best way to approach this is sending
+#the output of the sort to a new file. After doing this for each condition we can then try out the new command `comm` we
+#learned. It is useful to know we can limit what output we see from comm using option (-1, -2, -3)
+
+      `$ cut -f1 apple.conditionA | sort -u > apple.condA.sorted.genes`
+      `$ cut -f1 apple.conditionB | sort -u > apple.condB.sorted.genes`
+      `$ comm -1 -2 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l`
+
+#We can now use our options with `comm` and the special purpose files we created to find out how many genes correspond
+#to condition A or condition B.
+
+#Condition A
+      `$ comm -3 -2 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l`
+
+#Condition B
+      `$ comm -3 -1 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l`
+
+#Finally if we were interested in counting how many genes are in common in all 3 conditions we have to think of an approach
+#that doesnt use `comm` as looking at all 3 conditions doesnt allow for a pairwise comparison. To do this we can create
+#a list of genes for each of the 3 conditions. To combine the gene lists that we have from our sorted files we would
+#use a new command `cat` which combines files together end to end "concatenating" them. The rest is determining the counts
+#for each gene, and then determining the number of entries with that appear "3" times.
+      `$ cat apple.cond{A,B,C}.sorted.genes | sort | uniq -c | grep -c " 3 "`

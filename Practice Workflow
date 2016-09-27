@@ -18,7 +18,7 @@
       `$ more apple.genome`
 
 #in this file type each new chromosome is designated by a ">" symbol followed by an identifier then everything is
-#followed by the sequence. The command `grep` allows us to search a file line by line to looking for a specific pattern.
+#followed by the sequence. The command `grep` allows us to search a file line by line looking for a specific pattern.
 #We can use `grep` to search the file line by line for the pattern ">"
 
       `$ grep ">" apple.genome`

@@ -1,0 +1,37 @@
+---
+title: "Introduction to the Command Line for Genomics"
+author: "Jean-Paul Courneya"
+date: "October 17, 2016"
+output: html_document
+---
+
+
+### 1 - Start out by checking your location
+
+```{bash, eval = FALSE}
+pwd
+```
+
+### 2 - From the project directory you want to change directory to the directory with the files (this depends on your directory structure!)
+
+```{bash, eval = FALSE} 
+cd ~/mydirectory
+```
+
+### 3 - List the files to see the content of the directory
+
+```{bash, eval = FALSE}
+ls -l
+```
+
+
+### 4 - The first information to find out is how many chromosomes there are in the example genome. Looking at the apple.genome file we see that there is genomic information in multi-fasta format.
+
+```{bash, eval = FALSE}
+more apple.genome
+```
+
+### 5 - The command `grep` allows us to search a file line by line looking for a specific pattern. In the current `apple.genome` file, each new chromosome is designated by a ">" symbol followed by an identifier then the sequence. We can use `grep` to search the file line by line for the pattern ">" to determine the number of chromosomes
+```{bash, eval = FALSE}
+grep ">" apple.genome
+```

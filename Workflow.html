@@ -143,6 +143,121 @@ $(document).ready(function () {
 <h3>5 - The command <code>grep</code> allows us to search a file line by line looking for a specific pattern. In the current <code>apple.genome</code> file, each new chromosome is designated by a “&gt;” symbol followed by an identifier then the sequence. We can use <code>grep</code> to search the file line by line for the pattern “&gt;” to determine the number of chromosomes</h3>
 <pre class="bash"><code>grep &quot;&gt;&quot; apple.genome</code></pre>
 </div>
+<div id="what-if-this-file-had-100-chromosomes-1000-chromosomes-it-is-helpful-to-get-a-count-of-the-lines-that-grep-found.-there-are-2-options-for-this" class="section level3">
+<h3>6 - What if this file had 100 chromosomes, 1000 chromosomes, it is helpful to get a count of the lines that <code>grep</code> found. there are 2 options for this:</h3>
+<pre class="bash"><code>grep &quot;&gt;&quot; apple.genome | wc -l </code></pre>
+<p>or</p>
+<pre class="bash"><code>grep -c &quot;&gt;&quot; apple.genome</code></pre>
+</div>
+<div id="how-many-genes-are-there-in-the-file-apple.genes-each-line-represents-a-different-transcript-variant-the-columns-for-apple.genes-are" class="section level3">
+<h3>7 - How many genes are there? In the file <code>apple.genes</code> each line represents a different transcript variant, the columns for <code>apple.genes</code> are:</h3>
+<p>“geneID”, “transcriptID”, “chrom”, “strand”, “transcriptStart”, “transcriptEnd”, “transcriptStructure”</p>
+</div>
+<div id="we-will-look-at-column-1-field-1-geneid-since-counting-the-distinct-number-of-geneid-will-give-us-the-number-of-distinct-genes.-to-analyze-column-1-cut-it-this-trims-the-file-to-a-one-column-file-then-we-will-sort-using--u-flag-to-only-sort-distinct-unique-names-finally-we-will-pipe-that-data-to-wc-with--l-flag-to-count-the-number-of-lines.-this-will-give-us-the-number-of-unique-genes-in-apple.genes." class="section level3">
+<h3>We will look at column #1 (field 1; “geneID”) since counting the distinct number of ‘geneID’ will give us the number of distinct genes. To analyze column #1 <code>cut</code> it, this trims the file to a one column file, then we will <code>sort</code> using -u flag to only sort distinct (unique) names, finally we will pipe that data to <code>wc</code> with -l flag to count the number of lines. This will give us the number of unique genes in <code>apple.genes</code>.</h3>
+<pre class="bash"><code>cut -f1 apple.genes | sort -u | wc -l</code></pre>
+</div>
+<div id="to-find-the-number-of-transcripts-we-have-to-look-at-the-number-of-distinct-names-in-column2-field2transcriptid.-following-the-previous-approach" class="section level3">
+<h3>8 - To find the number of transcripts we have to look at the number of distinct names in column#2 (field2;“transcriptID”). Following the previous approach:</h3>
+<pre class="bash"><code>cut -f2 apple.genes | sort -u | wc -l</code></pre>
+</div>
+<div id="determine-which-genes-have-single-variants-look-at-column1-because-the-number-of-splice-variants-for-a-gene-is-given-by-the-number-of-instances-of-a-geneid-in-column1.-ex-if-a-gene-has-a-single-variant-then-there-is-one-corresponding-geneid-if-it-has-multiple-variants-the-geneid-appears-multiple-times-in-column1.to-determine-the-number-of-single-variants-extract-only-the-genes-that-have-exactly-one-line.-this-can-be-done-using-uniq-a-command-which-reports-the-lines-that-are-repeated-in-a-file-the--c-flag-gives-a-count-of-the-number-of-times-the-line-occurred-in-the-input." class="section level3">
+<h3>9- Determine which genes have single variants? Look at column#1 because the number of splice variants for a gene is given by the number of instances of a geneID in column#1. ex: if a gene has a single variant then there is one corresponding geneID, if it has multiple variants the geneID appears multiple times in column#1.To determine the number of single variants extract only the genes that have exactly one line. This can be done using <code>uniq</code> a command which reports the lines that are repeated in a file, the <code>-c</code> flag gives a count of the number of times the line occurred in the input.</h3>
+<pre class="bash"><code>cut -f1 apple.genes | sort | uniq -c | grep -c &quot;1&quot;</code></pre>
+</div>
+<div id="which-genes-have-multiple-variants-for-this-slightly-change-up-the-approach-from-above-by-counting-the-number-of-genes-with-more-than-one-line.-grep--v-allows-us-to-find-all-lines-not-matching-the-pattern-given" class="section level3">
+<h3>10- Which genes have multiple variants? For this slightly change up the approach from above by counting the number of genes with more than one line. <code>grep -v</code> allows us to find all lines not matching the pattern given</h3>
+<pre class="bash"><code>cut -f1 apple.genes | sort | uniq -c | grep -v &quot;1&quot; | wc -l</code></pre>
+</div>
+<div id="now-that-we-know-plenty-about-the-genes-and-their-variants-we-want-to-find-out-which-strand-of-the-chromosome-has" class="section level1">
+<h1>Now that we know plenty about the genes and their variants, we want to find out which strand of the chromosome has</h1>
+</div>
+<div id="more-genes-on-it.-column4-has-the-strand-information-but-merely-looking-at-column4-alone-will-not-give-us-the-answer" class="section level1">
+<h1>more genes on it. Column#4 has the strand information but merely looking at column#4 alone will not give us the answer</h1>
+</div>
+<div id="we-are-looking-for-since-some-genes-have-multiple-transcript-variants-all-of-which-are-located-on-the-same-strand.-after" class="section level1">
+<h1>we are looking for since some genes have multiple transcript variants all of which are located on the same strand. After</h1>
+</div>
+<div id="cutting-and-sorting-we-will-extract-the-strand-column-and-count-the-number-of-entries-of-each-type" class="section level1">
+<h1>cutting and sorting we will extract the strand column and count the number of entries of each type</h1>
+<pre><code>  `$ cut -f1,4 apple.genes | sort -u | cut -f2 | sort | uniq -c`</code></pre>
+</div>
+<div id="similar-to-the-prior-question-we-will-subset-geneids-and-to-determine-how-many-genes-are-on-each-chromosome" class="section level1">
+<h1>Similar to the prior question we will subset geneID’s and to determine how many genes are on each chromosome</h1>
+<p>we will work with column#3 (chrom)</p>
+<pre><code>  `$ cut -f1,3 apple.genes | sort -u | cut -f2 | sort | uniq -c`</code></pre>
+</div>
+<div id="our-last-bit-of-work-with-the-apple.genes-file-will-be-to-determine-how-many-transcripts-are-on-each-chromosome.-to" class="section level1">
+<h1>Our last bit of work with the apple.genes file will be to determine how many transcripts are on each chromosome. To</h1>
+</div>
+<div id="answer-this-we-will-approach-the-question-in-a-similar-way-to-the-prior-questions-but-since-we-are-looking-to-find" class="section level1">
+<h1>answer this we will approach the question in a similar way to the prior questions but since we are looking to find</h1>
+</div>
+<div id="transcripts-per-chromosome-we-will-need-to-examine-column2-and-column3.-since-each-transcriptid-is-unique-already" class="section level1">
+<h1>transcripts per chromosome we will need to examine column#2 and column#3. Since each transcriptID is unique already</h1>
+</div>
+<div id="unlike-the-geneid-which-could-have-duplicates-we-can-simplify-the-workflow.-see-it-both-ways-to-make-sure-for-yourself" class="section level1">
+<h1>unlike the geneID which could have duplicates we can simplify the workflow. See it both ways to make sure for yourself</h1>
+<pre><code>  `$ cut -f2,3 apple.genes | cut -f2 | sort | uniq -c` or
+  `$ cut -f2,3 apple.genes | sort -u | cut -f2 | sort | uniq -c`</code></pre>
+</div>
+<div id="in-our-final-question-we-are-asked-to-find-out-which-genes-are-common-between-experimental-conditions-and-which-are" class="section level1">
+<h1>In our final question we are asked to find out which genes are common between experimental conditions, and which are</h1>
+</div>
+<div id="specific-to-either-one-or-another-experimental-condition.-to-execute-on-this-task-we-will-learn-about-a-new-command-not" class="section level1">
+<h1>specific to either one or another experimental condition. To execute on this task we will learn about a new command not</h1>
+</div>
+<div id="covered-yet.-comm-the-comm-utility-reads-file1-and-file2-which-should-be-sorted-lexicallyand-produces-three" class="section level1">
+<h1>covered yet. <code>comm</code> The <code>comm</code> utility reads file1 and file2, which should be sorted lexically,and produces three</h1>
+</div>
+<div id="text-columns-as-output-lines-only-in-file1-lines-only-in-file2-and-lines-in-both-files.-first-we-will-find-which" class="section level1">
+<h1>text columns as output: lines only in file1; lines only in file2; and lines in both files. First we will find which</h1>
+</div>
+<div id="genes-are-in-common-between-condition-a-and-condition-b.-geneids-are-found-in-column1-of-the-apple.condition-files." class="section level1">
+<h1>genes are in common between condition A and condition B. GeneID’s are found in column#1 of the apple.condition* files.</h1>
+</div>
+<div id="we-need-to-isolate-the-unique-geneids-of-each-condition-to-compare-between-them.-the-best-way-to-approach-this-is-sending" class="section level1">
+<h1>We need to isolate the unique geneID’s of each condition to compare between them. The best way to approach this is sending</h1>
+</div>
+<div id="the-output-of-the-sort-to-a-new-file.-after-doing-this-for-each-condition-we-can-then-try-out-the-new-command-comm-we" class="section level1">
+<h1>the output of the sort to a new file. After doing this for each condition we can then try out the new command <code>comm</code> we</h1>
+</div>
+<div id="learned.-it-is-useful-to-know-we-can-limit-what-output-we-see-from-comm-using-option--1--2--3" class="section level1">
+<h1>learned. It is useful to know we can limit what output we see from comm using option (-1, -2, -3)</h1>
+<pre><code>  `$ cut -f1 apple.conditionA | sort -u &gt; apple.condA.sorted.genes`
+  `$ cut -f1 apple.conditionB | sort -u &gt; apple.condB.sorted.genes`
+  `$ comm -1 -2 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l`</code></pre>
+</div>
+<div id="we-can-now-use-our-options-with-comm-and-the-special-purpose-files-we-created-to-find-out-how-many-genes-correspond" class="section level1">
+<h1>We can now use our options with <code>comm</code> and the special purpose files we created to find out how many genes correspond</h1>
+</div>
+<div id="to-condition-a-or-condition-b." class="section level1">
+<h1>to condition A or condition B.</h1>
+</div>
+<div id="condition-a" class="section level1">
+<h1>Condition A</h1>
+<pre><code>  `$ comm -3 -2 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l`</code></pre>
+</div>
+<div id="condition-b" class="section level1">
+<h1>Condition B</h1>
+<pre><code>  `$ comm -3 -1 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l`</code></pre>
+</div>
+<div id="finally-if-we-were-interested-in-counting-how-many-genes-are-in-common-in-all-3-conditions-we-have-to-think-of-an-approach" class="section level1">
+<h1>Finally if we were interested in counting how many genes are in common in all 3 conditions we have to think of an approach</h1>
+</div>
+<div id="that-doesnt-use-comm-as-looking-at-all-3-conditions-doesnt-allow-for-a-pairwise-comparison.-to-do-this-we-can-create" class="section level1">
+<h1>that doesnt use <code>comm</code> as looking at all 3 conditions doesnt allow for a pairwise comparison. To do this we can create</h1>
+</div>
+<div id="a-list-of-genes-for-each-of-the-3-conditions.-to-combine-the-gene-lists-that-we-have-from-our-sorted-files-we-would" class="section level1">
+<h1>a list of genes for each of the 3 conditions. To combine the gene lists that we have from our sorted files we would</h1>
+</div>
+<div id="use-a-new-command-cat-which-combines-files-together-end-to-end-concatenating-them.-the-rest-is-determining-the-counts" class="section level1">
+<h1>use a new command <code>cat</code> which combines files together end to end “concatenating” them. The rest is determining the counts</h1>
+</div>
+<div id="for-each-gene-and-then-determining-the-number-of-entries-with-that-appear-3-times." class="section level1">
+<h1>for each gene, and then determining the number of entries with that appear “3” times.</h1>
+<pre><code>  `$ cat apple.cond{A,B,C}.sorted.genes | sort | uniq -c | grep -c &quot; 3 &quot;`</code></pre>
+</div>
 
 
 

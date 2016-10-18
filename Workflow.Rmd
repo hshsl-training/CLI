@@ -6,13 +6,13 @@ output: html_document
 ---
 
 
-### 1 - Start out by checking your location
+### 1 - Check your location
 
 ```{bash, eval = FALSE}
 pwd
 ```
 
-### 2 - From the project directory you want to change directory to the directory with the files (this depends on your directory structure!)
+### 2 - Change to the directory which contains the files.
 
 ```{bash, eval = FALSE} 
 cd ~/mydirectory
@@ -25,7 +25,9 @@ ls -l
 ```
 
 
-### 4 - The first information to find out is how many chromosomes there are in the example genome. Looking at the apple.genome file we see that there is genomic information in multi-fasta format.
+### 4 - How many chromosomes there are in the example genome?
+
+Looking at the `apple.genome` file we see that there is genomic information in multi-fasta format.
 
 ```{bash, eval = FALSE}
 more apple.genome
@@ -34,4 +36,94 @@ more apple.genome
 ### 5 - The command `grep` allows us to search a file line by line looking for a specific pattern. In the current `apple.genome` file, each new chromosome is designated by a ">" symbol followed by an identifier then the sequence. We can use `grep` to search the file line by line for the pattern ">" to determine the number of chromosomes
 ```{bash, eval = FALSE}
 grep ">" apple.genome
+```
+
+### 6 - What if this file had 100 chromosomes, 1000 chromosomes, it is helpful to get a count of the lines that `grep` found. there are 2 options for this:
+```{bash, eval = FALSE}
+grep ">" apple.genome | wc -l 
+```
+or
+```{bash, eval = FALSE}
+grep -c ">" apple.genome
+```
+
+### 7 - How many genes are there? In the file `apple.genes` each line represents a different transcript variant, the columns for `apple.genes` are:
+
+ "geneID", "transcriptID", "chrom", "strand", "transcriptStart",  "transcriptEnd", "transcriptStructure"
+
+### We will look at column #1 (field 1; "geneID") since counting the distinct number of 'geneID' will give us the number of distinct genes. To analyze column #1 `cut` it, this trims the file to a one column file, then we will `sort` using -u flag to only sort distinct (unique) names, finally we will pipe that data to `wc` with -l flag to count the number of lines. This will give us the number of unique genes in `apple.genes`.
+
+```{bash, eval = FALSE}
+cut -f1 apple.genes | sort -u | wc -l
+```
+
+### 8 - To find the number of transcripts we have to look at the number of distinct names in column#2 (field2;"transcriptID"). Following the previous approach:
+
+```{bash, eval = FALSE}
+cut -f2 apple.genes | sort -u | wc -l
+```
+
+### 9- Which genes have single variants? Look at column#1 because the number of splice variants for a gene is given by the number of instances of a geneID in column#1. ex: if a gene has a single variant then there is one corresponding geneID, if it has multiple variants the geneID appears multiple times in column#1.To determine the number of single variants extract only the genes that have exactly one line. This can be done using `uniq` a command which reports the lines that are repeated in a file, the `-c` flag gives a count of the number of times the line occurred in the input.
+
+```{bash, eval = FALSE}
+cut -f1 apple.genes | sort | uniq -c | grep -c "1"
+```
+
+### 10- Which genes have multiple variants? To answer this slightly change up the approach from above by counting the number of genes with more than one line. `grep -v` allows us to find all lines not matching the pattern given
+
+```{bash, eval = FALSE}
+cut -f1 apple.genes | sort | uniq -c | grep -v "1" | wc -l
+```
+
+### 11 - How many genes are on the +/- strand? Now that we know about the genes and their variants, we want to find out which strand of the DNA has more genes on it. Column#4 has the strand information but merely looking at column#4 alone will not give us the answer since some genes have multiple transcript variants all of which are located on the same strand so we have to remove redundancy. After cutting and sorting we will then cut again just the strand column and count the number of entities on the + or -.
+
+```{bash, eval= FALSE}
+cut -f1,4 apple.genes | sort -u | cut -f2 | sort | uniq -c
+```
+
+  
+### 12 - How many genes are on each chromosome? Similar to the prior question we will cut columns to isolate (subset) geneID's and chrom
+
+```{bash, eval = FALSE}
+cut -f1,3 apple.genes | sort -u | cut -f2 | sort | uniq -c
+```
+
+### 13 - How many transcripts are on each chromosome? 
+
+To answer this we will approach the question in a similar way to the prior questions but since we are looking to find transcripts per chromosome we will need to examine column#2 and column#3.
+
+```{bash, eval = FALSE}
+cut -f2,3 apple.genes | sort -u | cut -f2 | sort | uniq -c
+```
+
+### 14 - Which genes are common between experimental conditions, and which are specific to either one or another experimental condition. 
+
+To execute on this task we will learn about a new command not covered yet. `comm` The `comm` utility reads file1 and file2, which should be sorted lexically,and produces three text columns as output: lines only in file1; lines only in file2; and lines in both files. First we will find which genes are in common between condition A and condition B. GeneID's are found in column#1 of the apple.condition* files. We need to isolate the unique geneID's of each condition to compare between them. The best way to approach this is sending the output of the sort to a new file. After doing this for each condition we can then try out the new command `comm`. To limit what output is displayed from `comm` use option (-1, -2, -3)
+
+```{bash, eval = FALSE}
+cut -f1 apple.conditionA | sort -u > apple.condA.sorted.genes
+cut -f1 apple.conditionB | sort -u > apple.condB.sorted.genes
+cut -f1 apple.conditionC | sort -u > apple.condC.sorted.genes
+comm -1 -2 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l
+```
+
+Using the options with `comm` and the special purpose files we created, find out how many genes correspond
+to condition A or condition B.
+
+Condition A:
+
+```{bash, eval = FALSE}
+comm -3 -2 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l
+```
+
+Condition B:
+
+```{bash, eval = FALSE}
+comm -3 -1 apple.condA.sorted.genes apple.condB.sorted.genes | wc -l
+```
+
+How many genes are in common in all 3 conditions? we have to think of an approach that doesnt use `comm` as looking at all 3 conditions doesnt allow for a pairwise comparison. To do this we can create a list of genes for each of the 3 conditions. To combine the gene lists that came from the sorted files we would use the command `cat` which combines files together end to end "concatenating" them. The rest is determining the counts for each gene, and then determining the number of entries with that appear "3" times.
+
+```{bash, eval = FALSE}
+cat apple.cond{A,B,C}.sorted.genes | sort | uniq -c | grep -c " 3 "
 ```

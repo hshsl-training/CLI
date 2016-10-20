@@ -1,6 +1,6 @@
 ---
 title: "Introduction to the Command Line for Genomics"
-author: "Jean-Paul Courneya"
+author: "Jean-Paul Courneya and Brian Zelip"
 date: "October 17, 2016"
 output: html_document
 ---
@@ -25,7 +25,7 @@ ls -l
 ```
 
 
-### 4 - How many chromosomes there are in the example genome?
+### 4 - What is the structure of the `apple.genome` file?
 
 Looking at the `apple.genome` file we see that there is genomic information in multi-fasta format.
 
@@ -33,12 +33,20 @@ Looking at the `apple.genome` file we see that there is genomic information in m
 more apple.genome
 ```
 
-### 5 - The command `grep` allows us to search a file line by line looking for a specific pattern. In the current `apple.genome` file, each new chromosome is designated by a ">" symbol followed by an identifier then the sequence. We can use `grep` to search the file line by line for the pattern ">" to determine the number of chromosomes
+### 5 -  How many chromosomes are there in the example genome?
+
+The command `grep` allows us to search a file line by line looking for a specific pattern. 
+
+In the `apple.genome` file, each new chromosome is designated by a ">" symbol followed by an identifier then the sequence. We can use `grep` to search the file line by line for the pattern ">" to determine the number of chromosomes
+
 ```{bash, eval = FALSE}
 grep ">" apple.genome
 ```
 
-### 6 - What if this file had 100 chromosomes, 1000 chromosomes, it is helpful to get a count of the lines that `grep` found. there are 2 options for this:
+### 6 - How do we count the output of `grep`?
+
+What if this file had 100 chromosomes, 1000 chromosomes, it is helpful to get a count of the lines that `grep` found. there are 2 options for this:
+
 ```{bash, eval = FALSE}
 grep ">" apple.genome | wc -l 
 ```
@@ -47,42 +55,53 @@ or
 grep -c ">" apple.genome
 ```
 
-### 7 - How many genes are there? In the file `apple.genes` each line represents a different transcript variant, the columns for `apple.genes` are:
+### 7 - How many genes are there? 
+
+In the file `apple.genes` each line represents a different transcript variant, the columns for `apple.genes` are:
 
  "geneID", "transcriptID", "chrom", "strand", "transcriptStart",  "transcriptEnd", "transcriptStructure"
 
-### We will look at column #1 (field 1; "geneID") since counting the distinct number of 'geneID' will give us the number of distinct genes. To analyze column #1 `cut` it, this trims the file to a one column file, then we will `sort` using -u flag to only sort distinct (unique) names, finally we will pipe that data to `wc` with -l flag to count the number of lines. This will give us the number of unique genes in `apple.genes`.
+Look at column #1 (field 1; "geneID") since counting the unique 'geneID' will give us the number of distinct genes. To analyze column #1 `cut` it, this trims the file to a one column file, then we will `sort` using -u flag to only sort distinct (unique) names, finally we will pipe that data to `wc` with -l flag to count the number of lines. This will give us the number of unique genes in `apple.genes`.
 
 ```{bash, eval = FALSE}
 cut -f1 apple.genes | sort -u | wc -l
 ```
 
-### 8 - To find the number of transcripts we have to look at the number of distinct names in column#2 (field2;"transcriptID"). Following the previous approach:
+### 8 - How many transcripts in the apple genome?
+
+Look at the number of distinct names in column#2 (field2;"transcriptID"). Following the previous approach:
 
 ```{bash, eval = FALSE}
 cut -f2 apple.genes | sort -u | wc -l
 ```
 
-### 9- Which genes have single variants? Look at column#1 because the number of splice variants for a gene is given by the number of instances of a geneID in column#1. ex: if a gene has a single variant then there is one corresponding geneID, if it has multiple variants the geneID appears multiple times in column#1.To determine the number of single variants extract only the genes that have exactly one line. This can be done using `uniq` a command which reports the lines that are repeated in a file, the `-c` flag gives a count of the number of times the line occurred in the input.
+### 9- Which genes have single variants? 
+
+Look at column#1 because the number of splice variants for a gene is given by the number of instances of a geneID in column#1. ex: if a gene has a single variant then there is one corresponding geneID, if it has multiple variants the geneID appears multiple times in column#1. To determine the number of single variants extract only the genes that have exactly one line. This can be done using `uniq` a command which reports the lines that are repeated in a file, the `-c` flag gives a count of the number of times the line occurred in the input.
 
 ```{bash, eval = FALSE}
 cut -f1 apple.genes | sort | uniq -c | grep -c "1"
 ```
 
-### 10- Which genes have multiple variants? To answer this slightly change up the approach from above by counting the number of genes with more than one line. `grep -v` allows us to find all lines not matching the pattern given
+### 10- Which genes have multiple variants? 
+
+To answer this slightly change up the approach from #9 above by counting the number of genes with more than one line. `grep -v` allows us to find all lines not matching the pattern given
 
 ```{bash, eval = FALSE}
 cut -f1 apple.genes | sort | uniq -c | grep -v "1" | wc -l
 ```
 
-### 11 - How many genes are on the +/- strand? Now that we know about the genes and their variants, we want to find out which strand of the DNA has more genes on it. Column#4 has the strand information but merely looking at column#4 alone will not give us the answer since some genes have multiple transcript variants all of which are located on the same strand so we have to remove redundancy. After cutting and sorting we will then cut again just the strand column and count the number of entities on the + or -.
+### 11 - How many genes are on the +/- strand? 
+
+Now that we know about the genes and their variants, we want to find out which strand of the DNA has more genes on it. Column#4 has the strand information but merely looking at column#4 alone will not give us the answer since some genes have multiple transcript variants all of which are located on the same strand so we have to remove redundancy. After cutting and sorting we will then cut again just the strand column and count the number of entities on the + or -.
 
 ```{bash, eval= FALSE}
 cut -f1,4 apple.genes | sort -u | cut -f2 | sort | uniq -c
 ```
 
-  
-### 12 - How many genes are on each chromosome? Similar to the prior question we will cut columns to isolate (subset) geneID's and chrom
+### 12 - How many genes are on each chromosome? 
+
+Similar to the prior question we will cut columns to isolate (subset) geneID's and chrom
 
 ```{bash, eval = FALSE}
 cut -f1,3 apple.genes | sort -u | cut -f2 | sort | uniq -c

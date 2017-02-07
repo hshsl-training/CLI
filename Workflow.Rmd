@@ -15,7 +15,7 @@ pwd
 ### 2 - Change to the directory which contains the files.
 
 ```{bash, eval = FALSE} 
-cd ~/mydirectory
+cd ~/Desktop/data
 ```
 
 ### 3 - List the files to see the content of the directory

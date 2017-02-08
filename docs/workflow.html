@@ -65,6 +65,9 @@ h6 {
 .table th:not([align]) {
   text-align: left;
 }
+
+
+div.section.level3 { padding-bottom: 1rem; }
 </style>
 
 
@@ -150,9 +153,9 @@ $(document).ready(function () {
 <div id="how-do-we-count-the-output-of-grep" class="section level3">
 <h3>6 - How do we count the output of <code>grep</code>?</h3>
 <p>What if this file had 100 chromosomes, 1000 chromosomes, it is helpful to get a count of the lines that <code>grep</code> found. there are 2 options for this:</p>
-<pre class="bash"><code>grep &quot;&gt;&quot; apple.genome | wc -l </code></pre>
-<p>or</p>
 <pre class="bash"><code>grep -c &quot;&gt;&quot; apple.genome</code></pre>
+<p>or</p>
+<pre class="bash"><code>grep &quot;&gt;&quot; apple.genome | wc -l </code></pre>
 </div>
 <div id="how-many-genes-are-there" class="section level3">
 <h3>7 - How many genes are there?</h3>

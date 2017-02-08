@@ -172,12 +172,12 @@ $(document).ready(function () {
 <div id="which-genes-have-single-variants" class="section level3">
 <h3>9- Which genes have single variants?</h3>
 <p>Look at column#1 because the number of splice variants for a gene is given by the number of instances of a geneID in column#1. ex: if a gene has a single variant then there is one corresponding geneID, if it has multiple variants the geneID appears multiple times in column#1. To determine the number of single variants extract only the genes that have exactly one line. This can be done using <code>uniq</code> a command which reports the lines that are repeated in a file, the <code>-c</code> flag gives a count of the number of times the line occurred in the input.</p>
-<pre class="bash"><code>cut -f1 apple.genes | sort | uniq -c | grep -c &quot;1&quot;</code></pre>
+<pre class="bash"><code>cut -f1 apple.genes | sort | uniq -c | grep -c &quot;1 &quot;</code></pre>
 </div>
 <div id="which-genes-have-multiple-variants" class="section level3">
 <h3>10- Which genes have multiple variants?</h3>
 <p>To answer this slightly change up the approach from #9 above by counting the number of genes with more than one line. <code>grep -v</code> allows us to find all lines not matching the pattern given</p>
-<pre class="bash"><code>cut -f1 apple.genes | sort | uniq -c | grep -v &quot;1&quot; | wc -l</code></pre>
+<pre class="bash"><code>cut -f1 apple.genes | sort | uniq -c | grep -v &quot;1 &quot; | wc -l</code></pre>
 </div>
 <div id="how-many-genes-are-on-the---strand" class="section level3">
 <h3>11 - How many genes are on the +/- strand?</h3>
